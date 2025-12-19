@@ -1,0 +1,29 @@
+<x-app-layout>
+        <div class="relative flex size-full min-h-screen flex-col bg-[#fcf8f9] group/design-root overflow-x-hidden" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
+            <div class="layout-container flex h-full grow flex-col">
+                <section class="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+                    <h1 class="text-4xl font-bold text-pink-600 mb-10">Get in Touch With Us!</h1>
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-8 max-w-5xl w-full">
+                    <a href="https://wa.me/6282245282550" target="_blank"
+                        class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center hover:bg-green-50 transition">
+                        <img src="https://img.icons8.com/color/48/000000/whatsapp--v1.png" alt="WhatsApp" class="mb-3" />
+                        <h2 class="text-xl font-semibold text-green-600">WhatsApp</h2>
+                        <p class="text-sm text-gray-600 mt-1">+62 822-4528-2550</p>
+                    </a>
+                    {{--  <a href="https://instagram.com/Azl1._" target="_blank"
+                        class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center hover:bg-pink-100 transition">
+                        <img src="https://img.icons8.com/color/48/000000/instagram-new--v1.png" alt="Instagram" class="mb-3" />
+                        <h2 class="text-xl font-semibold text-pink-600">Instagram</h2>
+                        <p class="text-sm text-gray-600 mt-1">@Azl1._</p>
+                    </a>
+                    <a href="https://maps.google.com/?q=Your+Bakery+Address" target="_blank"
+                        class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center hover:bg-blue-50 transition">
+                        <img src="https://img.icons8.com/color/48/000000/google-maps-new.png" alt="Google Maps" class="mb-3" />
+                        <h2 class="text-xl font-semibold text-blue-600">Find Us</h2>
+                        <p class="text-sm text-gray-600 mt-1 text-center">Jl. Kue Lezat No.1, Bandung</p>
+                    </a> --}}
+                    </div>
+                </section>
+            </div>
+        </div>
+</x-app-layout>

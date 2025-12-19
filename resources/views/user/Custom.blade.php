@@ -1,0 +1,160 @@
+<x-app-layout>
+<div class="relative flex size-full min-h-screen flex-col bg-[#fcf8f9] group/design-root overflow-x-hidden" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
+    <div class="layout-container flex h-full grow flex-col">
+        <!-- Main Page -->
+        <main class="flex-grow flex items-center justify-center pt-36 px-4 pb-16">
+            <section class="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-10">
+              <h2 class="text-4xl font-bold text-center mb-10 text-pink-600">Pesan Custom Cake</h2>
+
+              <form id="customForm" class="space-y-6">
+
+                <!-- Nama -->
+                <div>
+                  <label class="block font-semibold text-gray-700 mb-2">Nama</label>
+                  <input type="text" class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required />
+                </div>
+
+                <!-- No HP -->
+                <div>
+                  <label class="block font-semibold text-gray-700 mb-2">Nomor HP</label>
+                  <input type="tel" class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required />
+                </div>
+
+                <!-- Alamat -->
+                <div>
+                  <label class="block font-semibold text-gray-700 mb-2">Alamat</label>
+                  <textarea class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" rows="3" required></textarea>
+                </div>
+
+                <!-- Jenis Kue -->
+                <div>
+                  <label class="block font-semibold text-gray-700 mb-2">Jenis Kue</label>
+                  <select id="cake-type" class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required>
+                    <option value="">Pilih Jenis</option>
+                    <option value="bikang">Bikang</option>
+                    <option value="bolu">Bolu</option>
+                    <option value="lemper">Lemper</option>
+                  </select>
+                </div>
+
+                <!-- Jumlah Pesanan -->
+                <div>
+                  <label class="block font-semibold text-gray-700 mb-2">Jumlah Pesanan</label>
+                  <input type="number" min="1" value="1" class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required />
+                </div>
+
+                <!-- Dynamic options -->
+                <div id="dynamic-options" class="space-y-6"></div>
+
+                <!-- Submit -->
+                <div class="text-center pt-4">
+                  <button type="submit" class="bg-[#ee2b5c] hover:bg-red-700 text-white font-bold py-4 px-8 text-lg rounded-xl shadow-md">
+                    Pesan Sekarang
+                  </button>
+                </div>
+              </form>
+            </section>
+          </main>
+        </div>
+
+        <!-- Script untuk dynamic form -->
+        <script>
+          const cakeTypeSelect = document.getElementById("cake-type");
+          const dynamicOptions = document.getElementById("dynamic-options");
+
+          cakeTypeSelect.addEventListener("change", function () {
+            const selected = this.value;
+            dynamicOptions.innerHTML = ""; // reset sebelumnya
+
+            if (selected === "bikang") {
+              dynamicOptions.innerHTML = `
+              <div>
+                <label class="block font-semibold text-gray-700 mb-2">Warna Bikang</label>
+                <select class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required>
+                  <option value="pelangi">Pelangi</option>
+                  <option value="merah">Merah</option>
+                  <option value="hijau">Hijau</option>
+                </select>
+              </div>`;
+            }
+
+            if (selected === "bolu") {
+              dynamicOptions.innerHTML = `
+              <div>
+                <label class="block font-semibold text-gray-700 mb-2">Dipoting atau tidak?</label>
+                <select class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required>
+                  <option value="dipotong">Dipotong</option>
+                  <option value="utuh">Utuh</option>
+                </select>
+              </div>`;
+            }
+
+            if (selected === "lemper") {
+              dynamicOptions.innerHTML = `
+              <div>
+                <label class="block font-semibold text-gray-700 mb-2">Jenis Bungkus</label>
+                <select class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required>
+                  <option value="daun">Daun Pisang</option>
+                  <option value="plastik">Plastik</option>
+                </select>
+              </div>`;
+            }
+
+            // Jenis Kemasan (universal untuk semua jenis)
+            dynamicOptions.innerHTML += `
+              <div>
+                <label class="block font-semibold text-gray-700 mb-2">Jenis Kemasan</label>
+                <select class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required>
+                  <option value="mika">Mika</option>
+                  <option value="kerdus">Kerdus Biasa</option>
+                </select>
+              </div>`;
+          });
+        </script>
+    </div>
+<!-- Change the form submission script in Custom.html -->
+<script>
+    document.getElementById("customForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const nama = document.querySelector("input[type='text']").value;
+        const hp = document.querySelector("input[type='tel']").value;
+        const alamat = document.querySelector("textarea").value;
+        const jenisKue = document.getElementById("cake-type").value;
+        const jumlah = document.querySelector("input[type='number']").value;
+
+        // Ambil dynamic option (opsi tambahan & kemasan)
+        const dynamicSelects = document.querySelectorAll("#dynamic-options select");
+        const opsi = dynamicSelects[0]?.value || "";
+        const kemasan = dynamicSelects[1]?.value || "";
+
+        // Create order object
+        const order = {
+            id: Date.now(), // unique timestamp as ID
+            date: new Date().toLocaleString(),
+            nama: nama,
+            hp: hp,
+            alamat: alamat,
+            jenisKue: jenisKue,
+            jumlah: jumlah,
+            opsi: opsi,
+            kemasan: kemasan
+        };
+
+        // Get existing orders from localStorage or initialize empty array
+        let orders = JSON.parse(localStorage.getItem("bakeryOrders") || "[]");
+
+        // Add new order to array
+        orders.push(order);
+
+        // Save back to localStorage
+        localStorage.setItem("bakeryOrders", JSON.stringify(orders));
+
+        alert("Pesanan berhasil disimpan!");
+        document.getElementById("customForm").reset();
+        document.getElementById("dynamic-options").innerHTML = "";
+    });
+</script>
+
+</div>
+</x-app-layout>
