@@ -16,7 +16,7 @@
                     <!-- Home -->
                     <a class="text-[#1b0d11] text-sm font-medium leading-normal" href="{{ route('dashboard') }}">Home</a>
                     <!-- All Cakes -->
-                    <a class="text-[#1b0d11] text-sm font-medium leading-normal" href="{{ route('allcake') }}">All Cakes</a>
+                    <a class="text-[#1b0d11] text-sm font-medium leading-normal" href="{{ route('dashboard') }}#all-cakes">All Cakes</a>
                     <!-- Custom Cake -->
                     <a class="text-[#1b0d11] text-sm font-medium leading-normal" href="{{ route('custom') }}">Custom Cake</a>
                     <!--FAQ-->

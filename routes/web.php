@@ -22,9 +22,6 @@ Route::get("/dashboard", [HomeController::class, "index"])
     ->middleware(["auth", "verified"])
     ->name("dashboard");
 
-Route::get("/allcake", [HomeController::class, "index"])
-    ->middleware(["auth", "verified"])
-    ->name("allcake");
 
 Route::get("/custom", function () {
     return view("user.Custom");

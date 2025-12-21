@@ -15,6 +15,11 @@ class Product extends Model
         'is_active',
     ];
 
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+    
     public function closures()
     {
         return $this->hasMany(ProductClosure::class);

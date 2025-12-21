@@ -10,11 +10,15 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // Ambil semua produk   yang aktif
+        // Ambil semua produk yang aktif
         $products = Product::where('is_active', true)->get();
         
-        // Ambil produk terlaris (misal: ambil 4 produk acak dulu sebagai contoh)
-        $bestSellers = Product::where('is_active', true)->inRandomOrder()->take(4)->get();
+        // Ambil produk terlaris berdasarkan jumlah quantity terjual
+        $bestSellers = Product::where('is_active', true)
+            ->withSum('orderItems', 'quantity') // Menghitung total quantity dari relasi orderItems
+            ->orderByDesc('order_items_sum_quantity') // Urutkan dari yang terbanyak
+            ->take(4)
+            ->get();
 
         return view('user.home', compact('products', 'bestSellers'));
     }

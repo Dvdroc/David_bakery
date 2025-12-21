@@ -37,15 +37,8 @@
             <h1 class="text-6xl font-extrabold">DavidBakery</h1>
 
             <p class="mt-6 text-xl leading-relaxed">
-                A modern bakery with a touch of classic flavor.  
-                We craft fresh bread and pastries daily, made from the finest ingredients.  
-                Simple, warm, and baked with love in every batch.
+            Setiap kue kami dibuat dari bahan terbaik, diracik dengan detail sempurna dan layanan personal yang istimewa hanya untuk Anda.
             </p>
-
-            <a href="#"
-               class="inline-flex items-center gap-3 mt-8 text-2xl font-semibold hover:text-yellow-300">
-                Take a Look →
-            </a>
         </div>
 
         <!-- Social Icons -->

@@ -15,6 +15,7 @@
         <div class="mt-4">
             <x-text-input id="password" class="w-full border rounded-lg p-3"
                             placeholder="Password"
+                            type="password"
                             name="password"
                             required autocomplete="current-password" />
 
