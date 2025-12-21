@@ -38,7 +38,7 @@
                                         <form action="{{ route('cart.update', $item->id) }}" method="POST" class="flex items-center">
                                             @csrf
                                             @method('PATCH')
-                                            <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" 
+                                            <input type="number" name="quantity" value="{{ $item->quantity }}" min="20" max="200"
                                                 class="w-16 text-center border-gray-300 rounded-md shadow-sm focus:border-[#ee2b5c] focus:ring focus:ring-[#ee2b5c] focus:ring-opacity-50 text-sm"
                                                 onchange="this.form.submit()">
                                         </form>
@@ -62,7 +62,7 @@
                     </div>
 
                     <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <a href="{{ route('allcake') }}" class="text-gray-600 hover:text-[#ee2b5c] text-sm font-medium">
+                        <a href="{{ route('dashboard') }}#all-cakes" class="text-gray-600 hover:text-[#ee2b5c] text-sm font-medium">
                             &larr; Lanjut Belanja
                         </a>
                         <div class="flex flex-col items-end gap-4">
@@ -81,7 +81,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                         <p class="text-gray-500 text-lg mb-6">Keranjang belanjamu masih kosong.</p>
-                        <a href="{{ route('allcake') }}" class="bg-[#ee2b5c] text-white px-6 py-2 rounded-full font-bold hover:bg-[#d61f4b] transition">
+                        <a href="{{ route('dashboard') }}#all-cakes" class="bg-[#ee2b5c] text-white px-6 py-2 rounded-full font-bold hover:bg-[#d61f4b] transition">
                             Mulai Belanja
                         </a>
                     </div>

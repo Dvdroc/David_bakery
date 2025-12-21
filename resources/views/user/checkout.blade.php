@@ -18,10 +18,17 @@
 
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pengambilan (H+7 s.d H+30)</label>
-                            <input type="date" name="pickup_date" required 
+                            <input type="date" name="pickup_date" id="pickup_date" required 
                                 min="{{ $minDate->format('Y-m-d') }}" 
                                 max="{{ $maxDate->format('Y-m-d') }}"
                                 class="w-full rounded-lg border-gray-300 focus:border-[#ee2b5c] focus:ring-[#ee2b5c]">
+                            
+                            <p id="slot-info" class="text-sm mt-2 hidden">
+                                Kuota Tersedia: <span id="slot-count" class="font-bold">checking...</span> porsi
+                            </p>
+                            <p id="slot-error" class="text-sm text-red-600 mt-2 hidden font-bold">
+                                Maaf, kuota untuk tanggal ini sudah penuh.
+                            </p>
                         </div>
 
                         <div class="mb-4">
@@ -52,9 +59,17 @@
                         
                         <div class="space-y-3 mb-4 max-h-60 overflow-y-auto">
                             @foreach($cartItems as $item)
-                                <div class="flex justify-between text-sm">
-                                    <span>{{ $item->product->name }} (x{{ $item->quantity }})</span>
-                                    <span class="font-medium">Rp {{ number_format($item->product->price * $item->quantity, 0, ',', '.') }}</span>
+                                <div class="flex flex-col text-sm border-b border-dashed pb-2">
+                                    <div class="flex justify-between font-medium">
+                                        <span>{{ $item->product->name }} (x{{ $item->quantity }})</span>
+                                        <span>Rp {{ number_format($item->product->price * $item->quantity, 0, ',', '.') }}</span>
+                                    </div>
+                                    @if($item->packaging_type)
+                                        <div class="flex justify-between text-xs text-gray-500 mt-1 pl-2">
+                                            <span>+ {{ ceil($item->quantity / 20) }} Kerdus {{ ucfirst($item->packaging_type) }}</span>
+                                            <span>Rp {{ number_format(ceil($item->quantity / 20) * $item->packaging_price, 0, ',', '.') }}</span>
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -66,7 +81,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full mt-6 bg-[#ee2b5c] hover:bg-[#d61f4b] text-white font-bold py-3 rounded-full shadow transition duration-300">
+                        <button type="submit" id="submit-btn" class="w-full mt-6 bg-[#ee2b5c] hover:bg-[#d61f4b] text-white font-bold py-3 rounded-full shadow transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
                             Konfirmasi Pesanan
                         </button>
                         
@@ -80,6 +95,51 @@
     </div>
 
     <script>
+        // Data Slot dari Controller (PHP ke JS)
+        const slotData = @json($slotData ?? []);
+        const defaultQuota = 200; // Kuota default jika tanggal belum ada di database
+
+        const dateInput = document.getElementById('pickup_date');
+        const slotInfo = document.getElementById('slot-info');
+        const slotCountSpan = document.getElementById('slot-count');
+        const slotError = document.getElementById('slot-error');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // Event saat tanggal berubah
+        dateInput.addEventListener('change', function() {
+            const selectedDate = this.value;
+            
+            // Reset UI
+            slotInfo.classList.add('hidden');
+            slotError.classList.add('hidden');
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            submitBtn.classList.add('bg-[#ee2b5c]', 'hover:bg-[#d61f4b]');
+
+            if (!selectedDate) return;
+
+            // Cek ketersediaan
+            let available = defaultQuota;
+
+            // Jika tanggal ada di data slot (artinya sudah pernah ada pesanan/diatur admin)
+            if (slotData.hasOwnProperty(selectedDate)) {
+                available = slotData[selectedDate];
+            }
+
+            // Tampilkan Info
+            if (available > 0) {
+                slotInfo.classList.remove('hidden');
+                slotCountSpan.innerText = available;
+                slotCountSpan.className = available < 50 ? "font-bold text-orange-500" : "font-bold text-green-600";
+            } else {
+                // Jika Kuota Habis (0)
+                slotError.classList.remove('hidden');
+                submitBtn.disabled = true;
+                submitBtn.classList.remove('bg-[#ee2b5c]', 'hover:bg-[#d61f4b]');
+                submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            }
+        });
+
         function toggleAddress() {
             const type = document.getElementById('delivery_type').value;
             const addressField = document.getElementById('address_field');

@@ -22,6 +22,12 @@ class HomeController extends Controller
 
         return view('user.home', compact('products', 'bestSellers'));
     }
+    public function customPage()
+{
+    // Ambil produk aktif untuk dropdown
+    $products = Product::where('is_active', true)->get();
+    return view('user.Custom', compact('products'));
+}
 
     public function show($id)
     {

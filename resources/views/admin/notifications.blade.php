@@ -34,44 +34,65 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-sm">
-                        {{-- PERBAIKAN: Loop langsung menggunakan $order karena Controller mengirim Collection of Orders --}}
                         @foreach($orders as $order)
+                        
+                        {{-- LOGIKA MENGHITUNG PACKAGING/KERDUS --}}
+                        @php
+                            $packagingList = [];
+                            foreach($order->orderItems as $item) {
+                                // Pastikan kolom packaging_type tersedia di tabel order_items
+                                if (!empty($item->packaging_type)) {
+                                    $type = ucfirst($item->packaging_type); // Mika / Biasa
+                                    // Hitung jumlah kerdus (1 kerdus per 20 kue)
+                                    $boxCount = ceil($item->quantity / 20);
+                                    
+                                    if(isset($packagingList[$type])) {
+                                        $packagingList[$type] += $boxCount;
+                                    } else {
+                                        $packagingList[$type] = $boxCount;
+                                    }
+                                }
+                            }
+                            
+                            // Format menjadi string, contoh: "5 Kerdus Mika, 2 Kerdus Biasa"
+                            $packagingStringArr = [];
+                            foreach($packagingList as $type => $count) {
+                                $packagingStringArr[] = "$count Kerdus $type";
+                            }
+                            $packagingDisplay = implode(', ', $packagingStringArr);
+                        @endphp
+
                         <tr class="hover:bg-gray-50 transition">
-                            {{-- Faktur ID --}}
                             <td class="px-6 py-4 font-medium text-gray-900">#APM-{{ $order->id }}</td>
                             
-                            {{-- Waktu Ambil Pesanan --}}
                             <td class="px-6 py-4 text-gray-500">
                                 {{ \Carbon\Carbon::parse($order->pickup_date)->format('d M, Y') }}
                                 <br>
-                                {{-- Menangani jika pickup_time null/tidak ada --}}
                                 <span class="text-xs">Pukul: {{ $order->pickup_time ? substr($order->pickup_time, 0, 5) : '09:00' }} WIB</span>
                             </td>
                             
                             <td class="px-6 py-4 text-gray-500">Tunai</td>
                             
-                            {{-- Jumlah Kuantitas (Sum dari OrderItems) --}}
                             <td class="px-6 py-4 text-center font-bold text-gray-800">
                                 {{ $order->orderItems->sum('quantity') }} pcs
                             </td>
                             
-                            {{-- Nama User (Safe Access) --}}
                             <td class="px-6 py-4 text-gray-800 font-medium">{{ $order->user->name ?? 'User Tidak Ditemukan' }}</td>
                             
-                            {{-- Status Pesanan --}}
                             <td class="px-6 py-4">
                                 <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 border border-yellow-200">
                                     {{ ucfirst($order->status) }}
                                 </span>
                             </td>
                             
-                            {{-- Tombol Aksi --}}
                             <td class="px-6 py-4 text-right">
+                                {{-- Pass data packagingDisplay ke fungsi Javascript --}}
                                 <button onclick="openActionModal(
                                     {{ $order->id }}, 
                                     '{{ addslashes($order->user->name ?? 'User') }}', 
                                     '{{ $order->orderItems->sum('quantity') }} item', 
-                                    '{{ \Carbon\Carbon::parse($order->pickup_date)->format('d M Y') }}'
+                                    '{{ \Carbon\Carbon::parse($order->pickup_date)->format('d M Y') }}',
+                                    '{{ $packagingDisplay }}'
                                 )" 
                                 class="bg-[#8D9F4F] hover:bg-[#606C38] text-white font-bold py-1.5 px-4 rounded-lg shadow-sm transition text-xs uppercase tracking-wider">
                                     Aksi
@@ -93,18 +114,22 @@
         @endforelse
     </div>
     
+    {{-- MODAL AKSI --}}
     <div id="actionSelectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl w-96 p-6 relative text-center transform transition-all scale-100">
             <h3 class="text-xl font-bold text-gray-800 mb-2">Pilih Aksi Pesanan</h3>
             <p class="text-sm text-gray-500 mb-6">Pilih Terima untuk menyetujui, atau Tolak untuk membatalkan pesanan ini.</p>
             
-            <p class="text-gray-800 font-medium text-base mb-8 leading-relaxed">
+            <p class="text-gray-800 font-medium text-base mb-2 leading-relaxed">
                 Pesanan dari <span id="selectionModalNama" class="font-bold text-gray-700">...</span> 
                 (<span id="selectionModalJumlah" class="font-bold">...</span>)
                 untuk tanggal <span id="selectionModalTanggal" class="font-bold">...</span>.
             </p>
+
+            {{-- Elemen Baru untuk Menampilkan Kerdus --}}
+            <p id="selectionModalKerdus" class="text-pink-600 font-bold text-sm mb-6 hidden bg-pink-50 py-2 px-3 rounded-lg border border-pink-100 inline-block"></p>
             
-            <div class="flex justify-center gap-4">
+            <div class="flex justify-center gap-4 mt-4">
                 <button type="button" onclick="confirmAction('reject')" 
                         class="w-1/2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-lg transition">
                     Tolak
@@ -121,6 +146,7 @@
         </div>
     </div>
 
+    {{-- MODAL KONFIRMASI (Sama seperti sebelumnya) --}}
     <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl w-96 p-8 relative text-center transform transition-all scale-100">
             
@@ -130,7 +156,6 @@
             
             <form id="actionForm" method="POST">
                 @csrf
-                {{-- Placeholder untuk input hidden status jika reject --}}
                 <div id="hiddenInputs"></div>
 
                 <p class="text-gray-800 font-medium text-lg mb-8 leading-relaxed">
@@ -165,11 +190,23 @@
             document.getElementById('actionSelectionModal').classList.add('hidden');
         }
 
-        function openActionModal(id, nama, jumlah, tanggal) {
+        // FUNGSI INI DIPERBARUI UNTUK MENERIMA INFO KERDUS
+        function openActionModal(id, nama, jumlah, tanggal, infoKerdus) {
             currentOrderId = id; 
             document.getElementById('selectionModalNama').innerText = nama;
             document.getElementById('selectionModalJumlah').innerText = jumlah;
             document.getElementById('selectionModalTanggal').innerText = tanggal;
+            
+            const kerdusEl = document.getElementById('selectionModalKerdus');
+            
+            // Cek apakah ada info kerdus
+            if (infoKerdus && infoKerdus !== '') {
+                kerdusEl.innerText = "Termasuk: " + infoKerdus;
+                kerdusEl.classList.remove('hidden');
+            } else {
+                kerdusEl.classList.add('hidden');
+            }
+
             document.getElementById('actionSelectionModal').classList.remove('hidden');
             closeModal(); 
         }
@@ -201,7 +238,6 @@
                 buttonClass = 'bg-red-600 hover:bg-red-700';
                 url = `/admin/orders/${currentOrderId}/update`;
 
-                // Tambah input hidden status = cancelled
                 hiddenInputs.innerHTML = '<input type="hidden" name="status" value="cancelled">';
             }
 

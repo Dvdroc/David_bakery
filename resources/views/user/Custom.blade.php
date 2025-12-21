@@ -1,160 +1,127 @@
 <x-app-layout>
 <div class="relative flex size-full min-h-screen flex-col bg-[#fcf8f9] group/design-root overflow-x-hidden" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
     <div class="layout-container flex h-full grow flex-col">
-        <!-- Main Page -->
         <main class="flex-grow flex items-center justify-center pt-36 px-4 pb-16">
             <section class="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-10">
-              <h2 class="text-4xl font-bold text-center mb-10 text-pink-600">Pesan Custom Cake</h2>
+              <div class="text-center mb-10">
+                  <h2 class="text-4xl font-bold text-pink-600">Pesan Custom Cake</h2>
+                  <p class="text-gray-500 mt-2">Pesanan dalam jumlah besar (Min. 20 Pcs)</p>
+              </div>
 
-              <form id="customForm" class="space-y-6">
+              @if ($errors->any())
+                  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                      <ul>
+                          @foreach ($errors->all() as $error)
+                              <li>{{ $error }}</li>
+                          @endforeach
+                      </ul>
+                  </div>
+              @endif
 
-                <!-- Nama -->
-                <div>
-                  <label class="block font-semibold text-gray-700 mb-2">Nama</label>
-                  <input type="text" class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required />
+              <form action="{{ route('cart.custom.add') }}" method="POST" class="space-y-6">
+                @csrf
+
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-4">
+                    <h3 class="font-bold text-gray-700 border-b pb-2">Informasi Pemesan</h3>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Nama</label>
+                        <input type="text" value="{{ Auth::user()->name }}" class="w-full border bg-gray-100 text-gray-500 rounded-lg p-3 cursor-not-allowed" readonly />
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Nomor HP</label>
+                            <input type="text" value="{{ Auth::user()->phone ?? Auth::user()->no_hp ?? '-' }}" class="w-full border bg-gray-100 text-gray-500 rounded-lg p-3 cursor-not-allowed" readonly />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Email</label>
+                            <input type="text" value="{{ Auth::user()->email }}" class="w-full border bg-gray-100 text-gray-500 rounded-lg p-3 cursor-not-allowed" readonly />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Alamat</label>
+                        <textarea class="w-full border bg-gray-100 text-gray-500 rounded-lg p-3 cursor-not-allowed" rows="2" readonly>{{ Auth::user()->address ?? Auth::user()->alamat ?? '-' }}</textarea>
+                    </div>
                 </div>
 
-                <!-- No HP -->
-                <div>
-                  <label class="block font-semibold text-gray-700 mb-2">Nomor HP</label>
-                  <input type="tel" class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required />
+                <div class="space-y-6">
+                    <div>
+                        <label for="product_id" class="block font-bold text-gray-700 mb-2">Pilih Jenis Kue</label>
+                        <select name="product_id" id="product_id" class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required>
+                            <option value="">-- Pilih Kue --</option>
+                            @foreach($products as $product)
+                                <option value="{{ $product->id }}">
+                                    {{ $product->name }} - Rp {{ number_format($product->price, 0, ',', '.') }} /pcs
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="quantity" class="block font-bold text-gray-700 mb-2">Jumlah Pesanan (Min. 20)</label>
+                        <input type="number" name="quantity" id="quantity" min="20" value="20" class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required />
+                        <p class="text-sm text-gray-500 mt-1">*Minimal pemesanan untuk custom adalah 20 pcs.</p>
+                    </div>
+                    <div id="box-info" class="text-pink-600 text-sm font-semibold mt-2 hidden">
+                      Estimasi: Akan menggunakan <span id="box-count">0</span> Kerdus.
+                    </div>
+
+                    <div>
+                        <label for="packaging" class="block font-bold text-gray-700 mb-2">Jenis Kemasan (Kerdus)</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="relative flex items-center justify-between p-4 border rounded-xl cursor-pointer hover:bg-pink-50 has-[:checked]:ring-2 has-[:checked]:ring-pink-500 has-[:checked]:bg-pink-50">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" name="packaging" value="biasa" class="w-5 h-5 text-pink-600 border-gray-300 focus:ring-pink-500" required checked>
+                                    <div>
+                                        <div class="font-semibold text-gray-800">Kerdus Biasa</div>
+                                        <div class="text-sm text-gray-500">+ Rp 10.000 /pcs</div>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label class="relative flex items-center justify-between p-4 border rounded-xl cursor-pointer hover:bg-pink-50 has-[:checked]:ring-2 has-[:checked]:ring-pink-500 has-[:checked]:bg-pink-50">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" name="packaging" value="mika" class="w-5 h-5 text-pink-600 border-gray-300 focus:ring-pink-500">
+                                    <div>
+                                        <div class="font-semibold text-gray-800">Kerdus Mika</div>
+                                        <div class="text-sm text-gray-500">+ Rp 15.000 /pcs</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Alamat -->
-                <div>
-                  <label class="block font-semibold text-gray-700 mb-2">Alamat</label>
-                  <textarea class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" rows="3" required></textarea>
-                </div>
-
-                <!-- Jenis Kue -->
-                <div>
-                  <label class="block font-semibold text-gray-700 mb-2">Jenis Kue</label>
-                  <select id="cake-type" class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required>
-                    <option value="">Pilih Jenis</option>
-                    <option value="bikang">Bikang</option>
-                    <option value="bolu">Bolu</option>
-                    <option value="lemper">Lemper</option>
-                  </select>
-                </div>
-
-                <!-- Jumlah Pesanan -->
-                <div>
-                  <label class="block font-semibold text-gray-700 mb-2">Jumlah Pesanan</label>
-                  <input type="number" min="1" value="1" class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required />
-                </div>
-
-                <!-- Dynamic options -->
-                <div id="dynamic-options" class="space-y-6"></div>
-
-                <!-- Submit -->
                 <div class="text-center pt-4">
-                  <button type="submit" class="bg-[#ee2b5c] hover:bg-red-700 text-white font-bold py-4 px-8 text-lg rounded-xl shadow-md">
-                    Pesan Sekarang
+                  <button type="submit" class="w-full bg-[#ee2b5c] hover:bg-red-700 text-white font-bold py-4 px-8 text-lg rounded-xl shadow-md transition duration-300 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    Masukkan Keranjang
                   </button>
                 </div>
+
               </form>
             </section>
           </main>
-        </div>
-
-        <!-- Script untuk dynamic form -->
-        <script>
-          const cakeTypeSelect = document.getElementById("cake-type");
-          const dynamicOptions = document.getElementById("dynamic-options");
-
-          cakeTypeSelect.addEventListener("change", function () {
-            const selected = this.value;
-            dynamicOptions.innerHTML = ""; // reset sebelumnya
-
-            if (selected === "bikang") {
-              dynamicOptions.innerHTML = `
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">Warna Bikang</label>
-                <select class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required>
-                  <option value="pelangi">Pelangi</option>
-                  <option value="merah">Merah</option>
-                  <option value="hijau">Hijau</option>
-                </select>
-              </div>`;
-            }
-
-            if (selected === "bolu") {
-              dynamicOptions.innerHTML = `
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">Dipoting atau tidak?</label>
-                <select class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required>
-                  <option value="dipotong">Dipotong</option>
-                  <option value="utuh">Utuh</option>
-                </select>
-              </div>`;
-            }
-
-            if (selected === "lemper") {
-              dynamicOptions.innerHTML = `
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">Jenis Bungkus</label>
-                <select class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required>
-                  <option value="daun">Daun Pisang</option>
-                  <option value="plastik">Plastik</option>
-                </select>
-              </div>`;
-            }
-
-            // Jenis Kemasan (universal untuk semua jenis)
-            dynamicOptions.innerHTML += `
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">Jenis Kemasan</label>
-                <select class="w-full border rounded-lg p-4 text-lg focus:ring-2 focus:ring-pink-400" required>
-                  <option value="mika">Mika</option>
-                  <option value="kerdus">Kerdus Biasa</option>
-                </select>
-              </div>`;
-          });
-        </script>
     </div>
-<!-- Change the form submission script in Custom.html -->
+</div>
 <script>
-    document.getElementById("customForm").addEventListener("submit", function (e) {
-        e.preventDefault();
+    const quantityInput = document.getElementById('quantity');
+    const boxInfo = document.getElementById('box-info');
+    const boxCountSpan = document.getElementById('box-count');
 
-        const nama = document.querySelector("input[type='text']").value;
-        const hp = document.querySelector("input[type='tel']").value;
-        const alamat = document.querySelector("textarea").value;
-        const jenisKue = document.getElementById("cake-type").value;
-        const jumlah = document.querySelector("input[type='number']").value;
-
-        // Ambil dynamic option (opsi tambahan & kemasan)
-        const dynamicSelects = document.querySelectorAll("#dynamic-options select");
-        const opsi = dynamicSelects[0]?.value || "";
-        const kemasan = dynamicSelects[1]?.value || "";
-
-        // Create order object
-        const order = {
-            id: Date.now(), // unique timestamp as ID
-            date: new Date().toLocaleString(),
-            nama: nama,
-            hp: hp,
-            alamat: alamat,
-            jenisKue: jenisKue,
-            jumlah: jumlah,
-            opsi: opsi,
-            kemasan: kemasan
-        };
-
-        // Get existing orders from localStorage or initialize empty array
-        let orders = JSON.parse(localStorage.getItem("bakeryOrders") || "[]");
-
-        // Add new order to array
-        orders.push(order);
-
-        // Save back to localStorage
-        localStorage.setItem("bakeryOrders", JSON.stringify(orders));
-
-        alert("Pesanan berhasil disimpan!");
-        document.getElementById("customForm").reset();
-        document.getElementById("dynamic-options").innerHTML = "";
+    quantityInput.addEventListener('input', function() {
+        const qty = parseInt(this.value) || 0;
+        if (qty >= 20) {
+            const boxes = Math.ceil(qty / 20);
+            boxCountSpan.innerText = boxes;
+            boxInfo.classList.remove('hidden');
+        } else {
+            boxInfo.classList.add('hidden');
+        }
     });
 </script>
-
-</div>
 </x-app-layout>

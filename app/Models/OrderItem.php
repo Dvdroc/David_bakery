@@ -11,8 +11,12 @@ class OrderItem extends Model
         'order_id',
         'product_id',
         'quantity',
+        'packaging_type',
+        'packaging_price',
         'price_per_unit',
         'subtotal',
+        
+
     ];
 
     public function product(): BelongsTo
